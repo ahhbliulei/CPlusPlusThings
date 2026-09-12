@@ -19,16 +19,16 @@ const int a=100;
 + 类型检查
 
     + const常量与`#define`宏定义常量的区别：
-    > ~~<u>**const常量具有类型，编译器可以进行安全检查；#define宏定义没有数据类型，只是简单的字符串替换，不能进行安全检查。**</u>~~感谢两位大佬指出这里问题，见：[issue](https://github.com/Light-City/CPlusPlusThings/issues/5)
+    > <strong><s>const常量具有类型，编译器可以进行安全检查；#define宏定义没有数据类型，只是简单的字符串替换，不能进行安全检查。</s></strong>感谢两位大佬指出这里问题，见：[issue](https://github.com/Light-City/CPlusPlusThings/issues/5)
 
-    + const定义的变量只有类型为整数或枚举，且以常量表达式初始化时才能作为常量表达式。
+    + const常量支持所有类型。
     + 其他情况下它只是一个 `const` 限定的变量，不要将与常量混淆。
 
 + 防止修改，起保护作用，增加程序健壮性
 
 ```cpp
 void f(const int i){
-    i++; //error!
+    i++; // error!
 }
 ```
 
@@ -45,7 +45,7 @@ void f(const int i){
 
 ```cpp
 // file1.cpp
-int ext
+int ext;
 // file2.cpp
 #include<iostream>
 
@@ -58,9 +58,9 @@ int main(){
 > const常量在不同文件的访问
 
 ```cpp
-//extern_file1.cpp
+// extern_file1.cpp
 extern const int ext=12;
-//extern_file2.cpp
+// extern_file2.cpp
 #include<iostream>
 extern const int ext;
 int main(){
@@ -88,14 +88,26 @@ const int i,j=0 // error: uninitialized const ‘i’
 与指针相关的const有四种：
 
 ```c++
-const char * a; //指向const对象的指针或者说指向常量的指针。
-char const * a; //同上
-char * const a; //指向类型对象的const指针。或者说常指针、const指针。
-const char * const a; //指向const对象的const指针。
+const char * a; // 指向const对象的指针或者说指向常量的指针。
+char const * a; // 同上
+char * const a; // 指向类型对象的const指针。或者说常指针、const指针。
+const char * const a; // 指向const对象的const指针。
 ```
 
 > **小结：** <br>
 > 如果*const*位于`*`的左侧，则const就是用来修饰指针所指向的变量，即指针指向为常量；<br>如果const位于`*`的右侧，*const*就是修饰指针本身，即指针本身是常量。
+
+**另一种解读方式**<br>
+利用英文从右边往左边读，并且以to为分界，to之前为描述指针的特性，to之后为描述目标的特性<br>
+```c++
+const char * p; //p is a pointer to const char
+char const * p; //同上
+char * const p; //p is a const pointer to char
+const char * const p; //p is a const pointer to const char
+```
+当指针被加上const特性，则指针不可改变指向的地址<br>
+当指向的目标特性为char，则内容可以透过指针被修改，如: *char='y';<br>
+当指向的目标特性为const char，则内容不可透过指针修改<br>
 
 具体使用如下：
 
@@ -103,7 +115,7 @@ const char * const a; //指向const对象的const指针。
 
 ```cpp
 const int *ptr;
-*ptr = 10; //error
+*ptr = 10; // error
 ```
 
 ptr是一个指向int类型const对象的指针，const定义的是int类型，也就是ptr所指向的对象类型，而不是ptr本身，所以ptr可以不用赋初始值。但是不能通过ptr去修改所指对象的值。
@@ -113,7 +125,7 @@ ptr是一个指向int类型const对象的指针，const定义的是int类型，�
 ```c++
 const int p = 10;
 const void * vp = &p;
-void *vp = &p; //error
+void *vp = &p; // error
 ```
 
 另外一个重点是：**允许把非const对象的地址赋给指向const对象的指针**。
@@ -123,7 +135,7 @@ void *vp = &p; //error
 ```c++
 const int *ptr;
 int val = 3;
-ptr = &val; //ok
+ptr = &val; // ok
 ```
 
 我们不能通过ptr指针来修改val的值，即使它指向的是非const对象!
@@ -140,22 +152,33 @@ cout<<*ptr<<endl;
 
 （2） **常指针**
 
-const指针必须进行初始化，且const指针的值不能修改。
+const指针必须进行初始化，且const指针指向的值能修改，但指向不能修改。
 
 ```cpp
 #include<iostream>
 using namespace std;
 int main(){
-
-    int num=0;
-    int * const ptr=&num; //const指针必须初始化！且const指针的值不能修改
-    int * t = &num;
-    *t = 1;
+    int num=0, num1=1;
+    int * const ptr=&num; // const指针必须初始化！且const指针的指向不能修改
+    ptr = &num1; // error! const指针不能修改指向！
     cout<<*ptr<<endl;
 }
 ```
 
-上述修改ptr指针所指向的值，可以通过非const指针来修改。
+代码出现编译错误：const指针不能修改指向。
+
+```cpp
+#include<iostream>
+using namespace std;
+int main(){
+    int num=0, num1=1;
+    int * const ptr=&num; // const指针必须初始化！且const指针的指向不能修改
+    *ptr = 1;
+    cout<<*ptr<<endl;
+}
+```
+
+代码无事发生，正常输出1。
 
 最后，当把一个const常量的地址赋值给ptr时候，由于ptr指向的是一个变量，而不是const常量，所以会报错，出现：const int`*` -> int `*`错误！
 
@@ -164,7 +187,7 @@ int main(){
 using namespace std;
 int main(){
     const int num=0;
-    int * const ptr=&num; //error! const int* -> int*
+    int * const ptr=&num; // error! const int* -> int*
     cout<<*ptr<<endl;
 }
 ```
@@ -239,7 +262,7 @@ void StringCopy(char *dst, const char *src);
 void func(const A &a)
 ```
 
-对于非内部数据类型的参数而言，象void func(A a) 这样声明的函数注定效率比较低。因为函数体内将产生A 类型的临时对象用于复制参数a，而临时对象的构造、复制、析构过程都将消耗时间。
+对于非内部数据类型的参数而言，像void func(A a) 这样声明的函数注定效率比较低。因为函数体内将产生A 类型的临时对象用于复制参数a，而临时对象的构造、复制、析构过程都将消耗时间。
 
 为了提高效率，可以将函数声明改为void func(A &a)，因为“引用传递”仅借用一下参数的别名而已，不需要产生临
 时对象。
@@ -247,9 +270,7 @@ void func(const A &a)
 > 但是函数void func(A &a) 存在一个缺点：<br><br>“引用传递”有可能改变参数a，这是我们不期望的。解决这个问题很容易，加const修饰即可，因此函数最终成为
 void func(const A &a)。
 
-以此类推，是否应将void func(int x) 改写为void func(const int &x)，以便提高效率？完全没有必要，因为内部数
-
-据类型的参数不存在构造、析构的过程，而复制也非常快，“值传递”和“引用传递”的效率几乎相当。
+以此类推，是否应将void func(int x) 改写为void func(const int &x)，以便提高效率？完全没有必要，因为内部数据类型的参数不存在构造、析构的过程，而复制也非常快，“值传递”和“引用传递”的效率几乎相当。
 
 > 小结：<br>1.对于非内部数据类型的输入参数，应该将“值传递”的方式改为“const 引用传递”，目的是提高效率。例如将void func(A a) 改为void func(const A &a)。<br><br>2.对于内部数据类型的输入参数，不要将“值传递”的方式改为“const 引用传递”。否则既达不到提高效率的目的，又降低了函数的可理解性。例如void func(int x) 不应该改为void func(const int &x)。</font></p>
 
@@ -286,7 +307,7 @@ const对象只能访问const成员函数,而非const对象可以访问任意的�
 例如：
 
 ```cpp
-//apple.cpp
+// apple.cpp
 class Apple
 {
 private:
@@ -295,60 +316,57 @@ public:
     Apple(int i); 
     const int apple_number;
     void take(int num) const;
-    int add(int num);
-	int add(int num) const;
+    int add();
+    int add(int num) const;
     int getCount() const;
 
 };
-//main.cpp
-#include<iostream>
-#include"apple.cpp"
-using namespace std;
-
-Apple::Apple(int i):apple_number(i)
+// apple.cpp
+Apple::Apple(int i) : apple_number(i)
 {
-
 }
-int Apple::add(int num){
+int Apple::add(int num)
+{
     take(num);
+    return 0;
 }
-int Apple::add(int num) const{
+int Apple::add(int num) const
+{
     take(num);
+    return 0;
 }
 void Apple::take(int num) const
 {
-    cout<<"take func "<<num<<endl;
+    std::cout << "take func " << num << std::endl;
 }
 int Apple::getCount() const
 {
     take(1);
-//    add(); //error
+    //    add(); // error
     return apple_number;
 }
-int main(){
+int main()
+{
     Apple a(2);
-    cout<<a.getCount()<<endl;
+    cout << a.getCount() << endl;
     a.add(10);
     const Apple b(3);
     b.add(100);
     return 0;
 }
+// main.cpp
 ```
-> 编译： g++ -o main main.cpp apple.cpp<br>
+> 编译：bazel run basic_content/const/class_const/first_example:main<br>
 
-结果：
+此时报错，上面getCount()方法中调用了一个add方法，而add方法并非const修饰，所以运行报错。也就是说const成员函数只能访问const成员函数。
+
+当调用改为：
+
 ```
-take func 1
-2
-take func 10
-take func 100
+const Apple b(3);
+b.add(); // error
 ```
-
-上面getCount()方法中调用了一个add方法，而add方法并非const修饰，所以运行报错。也就是说const对象只能访问const成员函数。
-
-而add方法又调用了const修饰的take方法，证明了非const对象可以访问任意的成员函数,包括const成员函数。
-
-除此之外，我们也看到add的一个重载函数，也输出了两个结果，说明const对象默认调用const成员函数。
+此时，可以证明的是const对象只能访问const成员函数。
 
 我们除了上述的初始化const常量用初始化列表方式外，也可以通过下面方法：
 

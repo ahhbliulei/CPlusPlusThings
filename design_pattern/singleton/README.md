@@ -114,7 +114,7 @@ private:
     static singleton *p;
     static mutex lock_;
 public:
-    singleton *instance();
+    static singleton *instance();
 
     // 实现一个内嵌垃圾回收类
     class CGarbo
@@ -131,6 +131,7 @@ public:
 
 singleton *singleton::p = nullptr;
 singleton::CGarbo Garbo;
+std::mutex singleton::lock_;
 
 singleton* singleton::instance() {
     if (p == nullptr) {
@@ -185,7 +186,7 @@ singleton *instance() {
         lock_guard<mutex> guard(lock_);
         if (p == nullptr) {
             singleton *tmp = static_cast<singleton *>(operator new(sizeof(singleton)));
-            new(p)singleton();
+            new(tmp)singleton();
             p = tmp;
         }
     }
@@ -218,9 +219,9 @@ singleton *singleton::instance() {
 Scott Meyer在《Effective C++》中提出了一种简洁的singleton写法
 
 ```cpp
-singleton *singleton::instance() {
+singleton &singleton::instance() {
     static singleton p;
-    return &p;
+    return p;
 }
 ```
 

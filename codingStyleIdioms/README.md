@@ -7,7 +7,7 @@
 由于是英文的，且比较重要，于是总结成下面几条！
 
 - [1.类初始化列表](./1_classInitializers)
-- [2.枚举类替换命名空间](./2_enumclass_namespace)
+- [2.枚举类替换命名空间](./2_enumclass)
 - [3.RAII(资源获取即初始化)](./3_RAII)
 - [4.copy and swap](./4_copy-swap)
 - [5.pImpl(指针指向具体实现)](./5_pImpl)

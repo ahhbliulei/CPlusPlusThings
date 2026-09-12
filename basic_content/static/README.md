@@ -55,7 +55,7 @@ int main()
 
 - 类中的静态变量
 
-由于声明为static的变量只被初始化一次，因为它们在单独的静态存储中分配了空间，因此类中的静态变量**由对象共享。**对于不同的对象，不能有相同静态变量的多个副本。也是因为这个原因，静态变量不能使用构造函数初始化。
+由于声明为static的变量只被初始化一次，因为它们在单独的静态存储中分配了空间，因此类中的静态变量**由对象共享**。对于不同的对象，不能有相同静态变量的多个副本。也是因为这个原因，静态变量不能使用构造函数初始化。
 
 ```c++
 
@@ -246,3 +246,34 @@ int main()
 Welcome to Apple!
 ```
 
+**限定访问范围**
+static还有限定访问范围的作用（类似于匿名名字空间）。来自issue:https://github.com/Light-City/CPlusPlusThings/issues/142
+```cpp
+// source1.cpp
+extern void sayHello();
+const char* msg = "Hello World!\n";
+int main()
+{
+    sayHello();
+    return 0;
+}
+
+// source2.cpp
+#include <cstdio>
+extern char* msg;
+void sayHello()
+{
+    printf("%s", msg);
+}
+```
+g++对于上面两个代码文件是可以正常编译并且打印Hello World!，但如果给source1.cpp中的msg加上static，则会导致undefined reference to 'msg'的编译错误：
+```cpp
+// source1.cpp
+extern void sayHello();
+static const char* msg = "Hello World!\n";
+int main()
+{
+    sayHello();
+    return 0;
+}
+```
